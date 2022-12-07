@@ -1,4 +1,5 @@
 ## 스프링 배치
+<hr>
 
 ### 핵심 패턴
 Read: 데이터를 읽고 (db extract)
@@ -22,3 +23,86 @@ tasklet: 작업 내용
 
 ### 배치 코드 실행 순서
 job 실행 -> step 실행 -> tasklet 실행 (job 안에 step 안에 tasklet이 있음)
+
+
+### 스키마
+외부라이브러리/org.springframework.batch:spring-batch-core/spring-batch-core.jar 경로에서 각각의 DB 스키마와 테이블 DROP 스키마를 볼 수 있다.
+
+<image src="https://user-images.githubusercontent.com/104713339/205916979-e7f909e2-5dee-499d-a9c2-a4fd69a9c08a.png">
+
+
+### 스키마 생성방법 1. 수동 생성
+위 스키마 파일에 있는 DDL을 복사하여 콘솔에서 직접 실행해 테이블을 만들 수 있다.
+
+### 스키마 생성방법 2. 자동 생성
+<details>
+<summary>application.yml 설정 방법</summary>
+
+```yml
+spring:
+  profiles:
+    active: local
+# db 실행 1순위: edit configurations - active profiles 란에 mysql or local 등 작성한 환경으로 실행된다.
+# edit configurations 에 명시하지 않을 시 이 곳에서 mysql or local 중 작성한 환경으로 실행된다. (local = h2)
+
+# mysql or h2 등 여러 DB를 설정하고자 하면 구분선을 이용해 여러개의 profile을 설정한다.
+# profile 에 따른 db 선택은 위에서 명시한 방법으로 할 수 있다.
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    hikari:
+      jdbc-url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+  batch:
+    jdbc:
+      initialize-schema: embedded
+---
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/spring_batch?useUnicode=true&characterEncoding=utf8
+      username: study
+      password: yohan
+      driver-class-name: com.mysql.jdbc.Driver
+  batch:
+    jdbc:
+      initialize-schema: always # mysql 스키마 항상 생성
+```
+</details>
+
+### DB 스키마의 테이블 종류
+<image src="https://user-images.githubusercontent.com/104713339/206190578-76c3eabf-4966-49e2-af24-b37fe3fff8e2.png">
+
+각 테이블은 "일대다" 관계로 이루어져있다.
+
+
+### Job 관련 테이블
+> BATCH_JOB_INSTANCE
+- Job이 실행될 때 JobInstance 정보가 저장되며 job_name과 job_key를 키로 하여 하나의 데이터가 저장된다.
+- 동일한 job_name과 job_key로 중복 저장되지 않는다.
+
+> BATCH_JOB_EXECUTION
+- job 실행정보가 저장되며 job 생성/시작/종료시간, 실행상태, 메시지 등을 관리한다.
+
+> BATCH_JOB-EXECUTION-PARAMS
+- Job과 함께 실행되는 JobParameter 정보를 저장한다.
+
+> BATCH_JOB_EXECUTION_CONTEXT
+- Job의 실행 동안 상태정보, 공유데이터를 직렬화(serialized)와 Json 형식을 사용해 저장한다.
+- Step 간 서로 공유 가능하다.
+
+### Step 관련 테이블
+> BATCH_STEP_EXECUTION
+- Step의 실행정보가 저장되며 생성/시작/종료시간, 실행상태, 메시지 등을 관리한다.
+
+> BATCH_STEP_EXECUTION_CONTEXT
+- Job의 실행 동안 상태정보, 공유데이터를 직렬화(serialized)와 Json 형식을 사용해 저장한다.
+- Step 별로 저장되며 BATCH_JOB_EXECUTION_CONTEXT와 다르게 Step 간 서로 공유할 수 없다.
