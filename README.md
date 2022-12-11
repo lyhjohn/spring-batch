@@ -129,6 +129,7 @@ spring:
 ```java
 java -jar spring-batch-0.0.1-SNAPSHOT.jar 'name=user1' 'seq(long)=2L' 'date(date)=2022/12/11' 'age(double)=16.5'
 ```
+  
     - 혹은 Edit configuration - Program arguments에 아래 명령어 입력
     
 ```java
