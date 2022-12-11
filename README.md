@@ -140,4 +140,32 @@ name=user1 seq(long)=2L date(date)=2022/12/11 age(double)=16.5
   - 코드로 생성
     - ApplicationRunner 를 구현한 클래스 생성 후 JobLauncher와 Job을 주입한다.
     - run 메서드 내부에 JobParameters 생성 후 jobLauncher.run 한다.
+  <details>
+<summary>코드로 생성 방법 보기</summary>
+    
+    ```java
+    @Component
+public class JobParameterTest implements ApplicationRunner {
 
+	@Autowired
+	private JobLauncher jobLauncher;
+
+	@Autowired
+	private Job job;
+
+	@Override
+	public void run(ApplicationArguments args) throws Exception {
+
+		JobParameters jobParameters = new JobParametersBuilder()
+			.addString("name", "user1")
+			.addLong("seq", 2L)
+			.addDate("date", new Date())
+			.addDouble("age", 16.5)
+			.toJobParameters();
+		
+		jobLauncher.run(job, jobParameters);
+	}
+}
+```
+    
+  </details>
