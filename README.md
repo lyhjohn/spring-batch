@@ -125,12 +125,12 @@ spring:
 
 - JobParameter 생성 방법
   - 어플리케이션 실행 시 주입: target 폴더로 이동 후 jar파일이 있는 상태에서 아래 명령어 입력(따옴표 필수)
-  * 코드로 생성한 클래스가 있다면 yml 파일에 job: enabled: false 설정이 되어있어야 하고 코드로 생성한 클래스를 빈 등록 해제해야한다.
+코드로 생성한 클래스가 있다면 yml 파일에 job: enabled: false 설정이 되어있어야 하고 코드로 생성한 클래스를 빈 등록 해제해야한다.
 ```java
 java -jar spring-batch-0.0.1-SNAPSHOT.jar 'name=user1' 'seq(long)=2L' 'date(date)=2022/12/11' 'age(double)=16.5'
 ```
   
-  * 혹은 Edit configuration - Program arguments에 아래 명령어 입력
+혹은 Edit configuration - Program arguments에 아래 명령어 입력
     
 ```java
 name=user1 seq(long)=2L date(date)=2022/12/11 age(double)=16.5
