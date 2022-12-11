@@ -143,8 +143,8 @@ name=user1 seq(long)=2L date(date)=2022/12/11 age(double)=16.5
   <details>
 <summary>코드로 생성 방법 보기</summary>
     
-    ```java
-    @Component
+```java
+@Component
 public class JobParameterTest implements ApplicationRunner {
 
 	@Autowired
