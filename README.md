@@ -106,3 +106,66 @@ spring:
 > BATCH_STEP_EXECUTION_CONTEXT
 - Job의 실행 동안 상태정보, 공유데이터를 직렬화(serialized)와 Json 형식을 사용해 저장한다.
 - Step 별로 저장되며 BATCH_JOB_EXECUTION_CONTEXT와 다르게 Step 간 서로 공유할 수 없다.
+
+### Job
+- 하나의 배치작업 자체를 의미. 스프링 배치의 최상위 인터페이스.
+- Job Configuration을 통해 생성되는 객체 단위로써, 배치 작업을 어떻게 구성하고 실행할 것인지 명세해 놓은 객체.
+- 여러 Step을 포함하고 있는 컨테이너로써 반드시 한개 이상의 Step으로 구성되어야 한다.
+- 기본 구현체로 SimpleJob, FlowJob을 제공함.
+
+1. SimpleJob
+    - 순자적으로 Step을 실행시키고 보관하는 컨테이너.
+2. FlowJob
+    - 특정한 조건과 흐름에 따라 Flow 객체를 실행시키는 방식으로 Step을 구성하고 작업을 진행함.
+
+
+### JobParameter
+- Job을 실행할 때 함께 포함되어 사용되는 파라미터를 가진 도메인 객체
+- JOB_EXECUTION과 BATCH_JOB_EXECUTION_PARAM은 1:N 관계다.
+
+- JobParameter 생성 방법
+  - 어플리케이션 실행 시 주입: target 폴더로 이동 후 jar파일이 있는 상태에서 아래 명령어 입력(따옴표 필수)
+  
+코드로 생성한 클래스가 있다면 yml 파일에 job: enabled: false 설정이 되어있어야 하고 코드로 생성한 클래스를 빈 등록 해제해야한다.
+```java
+java -jar spring-batch-0.0.1-SNAPSHOT.jar 'name=user1' 'seq(long)=2L' 'date(date)=2022/12/11' 'age(double)=16.5'
+```
+  
+혹은 Edit configuration - Program arguments에 아래 명령어 입력
+    
+```java
+name=user1 seq(long)=2L date(date)=2022/12/11 age(double)=16.5
+```
+
+  - 코드로 생성
+    - ApplicationRunner 를 구현한 클래스 생성 후 JobLauncher와 Job을 주입한다.
+    - run 메서드 내부에 JobParameters 생성 후 jobLauncher.run 한다.
+  <details>
+<summary>코드로 생성 방법 보기</summary>
+    
+```java
+@Component
+public class JobParameterTest implements ApplicationRunner {
+
+	@Autowired
+	private JobLauncher jobLauncher;
+
+	@Autowired
+	private Job job;
+
+	@Override
+	public void run(ApplicationArguments args) throws Exception {
+
+		JobParameters jobParameters = new JobParametersBuilder()
+			.addString("name", "user1")
+			.addLong("seq", 2L)
+			.addDate("date", new Date())
+			.addDouble("age", 16.5)
+			.toJobParameters();
+		
+		jobLauncher.run(job, jobParameters);
+	}
+}
+```
+    
+  </details>
