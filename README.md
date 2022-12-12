@@ -126,7 +126,8 @@ spring:
 - JobParameter 생성 방법
   - 어플리케이션 실행 시 주입: target 폴더로 이동 후 jar파일이 있는 상태에서 아래 명령어 입력(따옴표 필수)
   
-코드로 생성한 클래스가 있다면 yml 파일에 job: enabled: false 설정이 되어있어야 하고 코드로 생성한 클래스를 빈 등록 해제해야한다.
+코드로 생성한 클래스가 있다면 yml 파일에 job: enabled: false 설정이 있어서는 안됨. 
+코드로 생성한 클래스는 Component 를 지워서 빈 등록 해제해야한다.
 ```java
 java -jar spring-batch-0.0.1-SNAPSHOT.jar 'name=user1' 'seq(long)=2L' 'date(date)=2022/12/11' 'age(double)=16.5'
 ```
@@ -169,3 +170,13 @@ public class JobParameterTest implements ApplicationRunner {
 ```
     
   </details>
+
+
+### JobExecution
+- JobInstance 에 대한 한번의 시도를 의미하는 객체로써 Job 실행 중 발생한 정보들을 저장하고 있음
+  - 시작시간, 종료시간, 상태(시작됨, 완료, 실패), 종료상태의 속성을 가짐
+- JobExecution 상태가 COMPLETED 면 JobInstance 실행이 완료된 것으로 간주, 재실행 불가
+- JobExecution 상태가 FAILED 이면 JobInstance 실행이 실패한 것으로 간주, 재실행 가능
+  - 테이블은과 ROW(객체)는 정상적으로 생성 되나 STATUS가 FAILED 임. 계속 실패하면 객체도 계속 생성됨(1:N관계)
+  - 이 경우 동일한 JobParameter 값으로 성공할 때까지 JobInstance를 계속 실행할 수 있음
+- JobInstance 와 JobExecution 은 1:N 관계.

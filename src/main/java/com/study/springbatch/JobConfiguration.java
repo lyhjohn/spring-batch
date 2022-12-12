@@ -36,47 +36,32 @@ public class JobConfiguration {
 	@Bean
 	public Job helloJob() {
 		return jobBuilderFactory.get("helloJob")
-			.start(helloStep1())
-			.next(helloStep2())
+			.start(Step1())
+			.next(Step2())
 			.build();
 	}
 
 	@Bean
-	public Step helloStep1() {
+	public Step Step1() {
 		return stepBuilderFactory.get("step1")
 			.tasklet(new Tasklet() {
 				@Override
 				public RepeatStatus execute(StepContribution stepContribution,
 					ChunkContext chunkContext) throws Exception {
 
-					JobParameters jobParameters = stepContribution.getStepExecution()
-						.getJobExecution().getJobParameters();
-					jobParameters.getString("name");
-					jobParameters.getLong("seq");
-					jobParameters.getDate("date");
-					jobParameters.getDouble("age");
-
-					Map<String, Object> jobParametersMap = chunkContext.getStepContext()
-						.getJobParameters();
-					jobParametersMap.get("name");
-					jobParametersMap.get("seq");
-					jobParametersMap.get("date");
-					jobParametersMap.get("age");
-
 
 					System.out.println("step1 has executed");
-					return null;
+					return RepeatStatus.FINISHED;
 				}
 			}).build();
 	}
 
 	@Bean
-	public Step helloStep2() {
+	public Step Step2() {
 		return stepBuilderFactory.get("step2")
 			.tasklet((stepContribution, chunkContext) -> {
 
 				System.out.println("step2 has executed");
-
 				// RepeatStatus.CONTINUABLE 명시하면 Tasklet이 무한정 실행됨
 				return RepeatStatus.FINISHED;
 			}).build();
