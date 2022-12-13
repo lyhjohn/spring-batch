@@ -87,7 +87,8 @@ spring:
 ### Job 관련 테이블
 > BATCH_JOB_INSTANCE
 - Job이 실행될 때 JobInstance 정보가 저장되며 job_name과 job_key를 키로 하여 하나의 데이터가 저장된다.
-- 동일한 job_name과 job_key로 중복 저장되지 않는다.
+- job_name과 JobParameter가 동시에 중복되는 값으로는 저장되지 않는다.
+  - (Job_Key: JobParameter를 직렬화 한 값)
 
 > BATCH_JOB_EXECUTION
 - job 실행정보가 저장되며 job 생성/시작/종료시간, 실행상태, 메시지 등을 관리한다.
@@ -120,6 +121,8 @@ spring:
 
 
 ### JobParameter
+- JobParameter를 직렬화 한 값이 JobInstance에서 JOB_KEY 이다.
+- JobParameter와 JobName이 모두 동일하게는 Job을 생성할 수 없다.
 - Job을 실행할 때 함께 포함되어 사용되는 파라미터를 가진 도메인 객체
 - JOB_EXECUTION과 BATCH_JOB_EXECUTION_PARAM은 1:N 관계다.
 
@@ -180,3 +183,30 @@ public class JobParameterTest implements ApplicationRunner {
   - 테이블은과 ROW(객체)는 정상적으로 생성 되나 STATUS가 FAILED 임. 계속 실패하면 객체도 계속 생성됨(1:N관계)
   - 이 경우 동일한 JobParameter 값으로 성공할 때까지 JobInstance를 계속 실행할 수 있음
 - JobInstance 와 JobExecution 은 1:N 관계.
+
+### STEP
+- Batch job을 구성하는 독립적인 하나의 단계.
+- 복잡한 비즈니스 로직을 포함하여 모든 설정들을 담고 있음
+- 배치작업을 어떻게 구성하고 실행할 것인지 명세해 놓은 객체
+- 모든 Job은 하나 이상의 Step으로 구성됨
+
+### STEP 기본 구현체
+- TaskletStep
+  - 가장 기본이 되는 클래스로서 Tasklet 타입의 구현체들을 제어한다.
+- PartitionStep
+  - 멀티 스레드 방식으로 Step을 여러개로 분리해서 실행한다.
+- JobStep
+  - Step 내에서 Job을 실행하도록 한다. (Job-Step-Job-Step... 으로 체인 구성)
+- FlowStep
+  - Step 내에서 FLow를 실행하도록 한다.
+
+### StepExecution
+- Step에 대한 한번의 시도를 의미하는 객체. Step 실행 중 발생한 정보를 저장하고 있음
+  - 시작시간, 종료시간, 상태(시작됨, 완료, 실패) 등 속성 가짐
+- 매번 시도할 때마다 각 Step이 생성됨 (서로 공유 X)
+- 이전 단계 Step이 실패해서 현재 Step을 실행하지 않았다면 이전 단계 Step만 FAILED 상태로 생성되고 현재 StepExecution은 생성되지 않는다.
+    - 성공이든 실패든 실행된 Step만 StepExecution을 생성한다.
+- Job이 재시작 하더라도 이미 완료된 Step은 재실행 되지 않고 실패했던 Step만 실행됨 (주의할건 Job은 실행)
+- StepExecution이 모두 정상적으로 완료되어야 JobExecution이 완료된다.
+- StepExecution 중 하나라도 실패하면 JobExecution은 실패한다.
+- JobExecution과 StepExecution은 1:N 관계 (여러개의 StepExecution은 하나의 JobExecution을 부모로 갖는다.)
