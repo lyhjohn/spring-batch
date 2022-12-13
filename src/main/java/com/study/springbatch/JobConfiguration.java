@@ -31,38 +31,46 @@ public class JobConfiguration {
 
 	private final JobBuilderFactory jobBuilderFactory;
 	private final StepBuilderFactory stepBuilderFactory;
+	private final CustomTasklet customTasklet;
 
 
 	@Bean
 	public Job helloJob() {
-		return jobBuilderFactory.get("helloJob")
+		return jobBuilderFactory.get("Job")
 			.start(Step1())
 			.next(Step2())
+			.next(Step3())
 			.build();
 	}
 
 	@Bean
 	public Step Step1() {
 		return stepBuilderFactory.get("step1")
+			.tasklet(customTasklet).build();
+	}
+
+	@Bean
+	public Step Step2() {
+		return stepBuilderFactory.get("step2")
 			.tasklet(new Tasklet() {
 				@Override
 				public RepeatStatus execute(StepContribution stepContribution,
 					ChunkContext chunkContext) throws Exception {
 
-
-					System.out.println("step1 has executed");
+					System.out.println("step2 has executed");
+					// RepeatStatus.CONTINUABLE 명시하면 Tasklet이 무한정 실행됨
+//				throw new RuntimeException("step2 failed");
 					return RepeatStatus.FINISHED;
 				}
 			}).build();
 	}
 
 	@Bean
-	public Step Step2() {
-		return stepBuilderFactory.get("step2")
+	public Step Step3() {
+		return stepBuilderFactory.get("step3")
 			.tasklet((stepContribution, chunkContext) -> {
 
-				System.out.println("step2 has executed");
-				// RepeatStatus.CONTINUABLE 명시하면 Tasklet이 무한정 실행됨
+				System.out.println("step3 has executed");
 				return RepeatStatus.FINISHED;
 			}).build();
 	}
