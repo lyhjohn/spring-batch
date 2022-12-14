@@ -1,9 +1,7 @@
 package com.study.springbatch;
 
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -16,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * job / step / tasklet 의미 job: 일감 step: 일의 단계 tasklet: 작업 내용
- * <p>
+ * 어플 실행 시 배치 테이블이 자동으로 생성되고 job이 자동으로 실행됨
  * 배치 코드 실행 순서 job 실행 -> step 실행 -> tasklet 실행 (job 안에 step 안에 tasklet이 있음)
  */
 
@@ -31,47 +29,40 @@ public class JobConfiguration {
 
 	private final JobBuilderFactory jobBuilderFactory;
 	private final StepBuilderFactory stepBuilderFactory;
-	private final CustomTasklet customTasklet;
 
 
 	@Bean
 	public Job helloJob() {
 		return jobBuilderFactory.get("Job")
-			.start(Step1())
-			.next(Step2())
-			.next(Step3())
+			.start(step1())
+			.next(step2())
 			.build();
 	}
 
 	@Bean
-	public Step Step1() {
+	public Step step1() {
 		return stepBuilderFactory.get("step1")
-			.tasklet(customTasklet).build();
-	}
-
-	@Bean
-	public Step Step2() {
-		return stepBuilderFactory.get("step2")
 			.tasklet(new Tasklet() {
 				@Override
 				public RepeatStatus execute(StepContribution stepContribution,
 					ChunkContext chunkContext) throws Exception {
-
-					System.out.println("step2 has executed");
-					// RepeatStatus.CONTINUABLE 명시하면 Tasklet이 무한정 실행됨
-//				throw new RuntimeException("step2 failed");
+					Thread.sleep(3000);
+					System.out.println("step1 was execute");
 					return RepeatStatus.FINISHED;
 				}
 			}).build();
 	}
 
 	@Bean
-	public Step Step3() {
-		return stepBuilderFactory.get("step3")
-			.tasklet((stepContribution, chunkContext) -> {
-
-				System.out.println("step3 has executed");
-				return RepeatStatus.FINISHED;
+	public Step step2() {
+		return stepBuilderFactory.get("step2")
+			.tasklet(new Tasklet() {
+				@Override
+				public RepeatStatus execute(StepContribution stepContribution,
+					ChunkContext chunkContext) throws Exception {
+					System.out.println("step2 was execute");
+					return RepeatStatus.FINISHED;
+				}
 			}).build();
 	}
 }
