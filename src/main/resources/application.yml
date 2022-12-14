@@ -34,7 +34,7 @@ spring:
   batch:
     jdbc:
       initialize-schema: always # mysql 스키마 항상 생성
-#    job:
-#      enabled: false # 스프링 Job 자동실행 off
+    job:
+      enabled: false # 스프링 Job 자동실행 off
 
 
