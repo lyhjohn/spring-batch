@@ -33,8 +33,10 @@ spring:
       driver-class-name: com.mysql.jdbc.Driver
   batch:
     jdbc:
-      initialize-schema: always # mysql 스키마 항상 생성
+      initialize-schema: always # mysql 배치 스키마 항상 생성
+#      table-prefix: TABLE_ # prefix 변경하려면 먼저 배치 테이블 이름도 변경해서 생성해야함
     job:
-      enabled: false # 스프링 Job 자동실행 off
+      names: ${job.name:NONE} # Edit configuration 에서 job.name 지정 가능, bean으로 등록한 job과 이름이 같아야함
+      enabled: true # 스프링 Job 자동실행 여부, 디폴트: true
 
 
