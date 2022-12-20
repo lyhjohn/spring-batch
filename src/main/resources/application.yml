@@ -1,6 +1,13 @@
 spring:
   profiles:
-    active: local
+    active: mysql
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
 # db 실행 1순위: edit configurations - active profiles 란에 mysql or local 등 작성한 환경으로 실행된다.
 # edit configurations 에 명시하지 않을 시 이 곳에서 mysql or local 중 작성한 환경으로 실행된다. (local = h2)
 
